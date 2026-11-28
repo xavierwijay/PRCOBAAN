@@ -58,7 +58,55 @@
             display: block;
             width: 100%;
             height: 100%;
-            touch-action: pan-y pinch-zoom;
+            touch-action: none;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Slider Taktil Ramah Anak */
+        .forest-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 14px;
+            border-radius: 999px;
+            border: 2px solid #276749;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .forest-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #F0C96B 0%, #E0B042 100%);
+            border: 3px solid #183629;
+            box-shadow: 0 3px 0 #183629, 0 4px 10px rgba(24, 54, 41, 0.25);
+            cursor: grab;
+            transition: transform 0.12s ease;
+        }
+
+        .forest-slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
+            transform: scale(1.12);
+        }
+
+        .forest-slider::-moz-range-thumb {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, #F0C96B 0%, #E0B042 100%);
+            border: 3px solid #183629;
+            box-shadow: 0 3px 0 #183629, 0 4px 10px rgba(24, 54, 41, 0.25);
+            cursor: grab;
         }
 
         /* Lapisan Antarmuka di Atas Dunia 3D */
@@ -119,6 +167,20 @@
                 animation-iteration-count: 1 !important;
                 scroll-behavior: auto !important;
                 transition-duration: 0.01ms !important;
+            }
+        }
+
+        @media print {
+            #world-canvas-container, #world-markers-layer, #top-hud, #modal-backdrop, .print-hidden {
+                display: none !important;
+            }
+            html, body {
+                background: #FFFFFF !important;
+            }
+            #certificate-card {
+                box-shadow: none !important;
+                border-width: 4px !important;
+                margin: 0 auto !important;
             }
         }
 
@@ -244,6 +306,16 @@
             transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
+        @media (max-width: 639px) {
+            .scene-art {
+                max-height: 145px;
+            }
+            .world-callout {
+                font-size: 11px !important;
+                padding: 0.2rem 0.55rem !important;
+            }
+        }
+
         /* Mode ringkas desktop: UI lebih compact agar tidak perlu zoom browser manual */
         @media (min-width: 1024px) {
             #top-hud {
@@ -337,21 +409,21 @@
     <!-- ANTARMUKA PENGGUNA (HUD & LAYAR PERMAINAN) -->
     <div id="ui-root">
         <!-- HUD ATAS -->
-        <header id="top-hud" class="hidden interactive-panel sticky top-0 z-30 bg-[#183629]/95 backdrop-blur-md text-[#FCF9F2] px-3 py-2 sm:px-5 border-b-4 border-[#276749] shadow-lg">
-            <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-2">
+        <header id="top-hud" class="hidden interactive-panel sticky top-0 z-30 bg-[#183629]/95 backdrop-blur-md text-[#FCF9F2] px-2.5 py-1.5 sm:px-5 sm:py-2 border-b-4 border-[#276749] shadow-lg">
+            <div class="max-w-6xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2">
                 <!-- Kiri: Identitas Pemain & Peta 3D -->
-                <div class="flex items-center gap-2">
-                    <button onclick="navigateTo('explore')" id="hud-explore-btn" class="bg-[#276749] hover:bg-[#317A57] border-2 border-[#8FB899]/60 text-[#FCF9F2] font-extrabold px-3 py-1.5 rounded-2xl text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-95">
+                <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                    <button onclick="navigateTo('explore')" id="hud-explore-btn" class="bg-[#276749] hover:bg-[#317A57] border-2 border-[#8FB899]/60 text-[#FCF9F2] font-extrabold px-2.5 py-1.5 sm:px-3 rounded-2xl text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-95">
                         <span id="hud-icon-compass"></span>
                         <span>Hutan 3D</span>
                     </button>
-                    <button onclick="navigateTo('report')" class="bg-[#DCEEF8] hover:bg-[#FCF9F2] border-2 border-[#6BAED6] text-[#183629] font-extrabold px-3 py-1.5 rounded-2xl text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-95">
+                    <button onclick="navigateTo('report')" aria-label="Laporan Belajar" title="Laporan" class="bg-[#DCEEF8] hover:bg-[#FCF9F2] border-2 border-[#6BAED6] text-[#183629] font-extrabold px-2.5 py-1.5 sm:px-3 rounded-2xl text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-95">
                         <span id="hud-icon-chart"></span>
                         <span class="hidden sm:inline">Laporan</span>
                     </button>
                 </div>
 
-                <!-- Tengah: Progres Misi -->
+                <!-- Tengah: Progres Misi (Desktop) -->
                 <div class="flex-1 max-w-xs mx-2 hidden md:block">
                     <div class="flex justify-between text-xs font-extrabold text-[#F6F1E3] mb-1">
                         <span id="hud-player-label">Penjaga Hutan</span>
@@ -363,12 +435,15 @@
                 </div>
 
                 <!-- Kanan: Skor, Lencana, Jeda & Pengaturan -->
-                <div class="flex items-center gap-1.5 sm:gap-2">
-                    <div class="bg-[#276749] border-2 border-[#E6B84C] px-3 py-1 rounded-2xl flex items-center gap-1.5 font-extrabold text-xs sm:text-sm text-[#F0C96B]">
+                <div class="flex items-center gap-1 sm:gap-2 shrink-0">
+                    <div id="hud-timer-wrap" class="hidden bg-[#183629] border-2 border-[#E6B84C]/70 px-2.5 py-1 sm:px-3 rounded-2xl flex items-center gap-1 font-extrabold text-xs sm:text-sm text-[#F0C96B]">
+                        ⏱ <span id="hud-timer">00:00</span>
+                    </div>
+                    <div class="bg-[#276749] border-2 border-[#E6B84C] px-2.5 py-1 sm:px-3 rounded-2xl flex items-center gap-1 sm:gap-1.5 font-extrabold text-xs sm:text-sm text-[#F0C96B]">
                         <span id="hud-icon-star"></span>
                         <span id="hud-score">0</span>
                     </div>
-                    <button onclick="navigateTo('achievements')" class="bg-[#F6F1E3] hover:bg-[#FCF9F2] border-2 border-[#E6B84C] text-[#183629] font-extrabold px-2.5 py-1.5 rounded-2xl text-xs sm:text-sm flex items-center gap-1.5 transition active:scale-95">
+                    <button onclick="navigateTo('achievements')" aria-label="Lencana" class="bg-[#F6F1E3] hover:bg-[#FCF9F2] border-2 border-[#E6B84C] text-[#183629] font-extrabold px-2 py-1.5 sm:px-2.5 rounded-2xl text-xs sm:text-sm flex items-center gap-1 sm:gap-1.5 transition active:scale-95">
                         <span id="hud-icon-badge"></span>
                         <span id="hud-badge-count" class="bg-[#276749] text-[#FCF9F2] text-xs px-1.5 py-0.2 rounded-full">0</span>
                     </button>
@@ -380,6 +455,14 @@
                     </button>
                 </div>
             </div>
+            <!-- Progres Misi Ringkas (Mobile) -->
+            <div class="md:hidden mt-1.5 flex items-center gap-2">
+                <span id="hud-player-label-mobile" class="text-[11px] font-extrabold text-[#F6F1E3] truncate max-w-[110px]">Penjaga Hutan</span>
+                <div class="flex-1 h-2.5 bg-[#0F241B] rounded-full overflow-hidden p-0.5 border border-[#8FB899]/60">
+                    <div id="hud-progress-bar-mobile" class="h-full bg-gradient-to-r from-[#689F77] via-[#9BC184] to-[#E6B84C] rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <span id="hud-progress-label-mobile" class="text-[11px] font-extrabold text-[#F0C96B] shrink-0">0 / 5 Pos</span>
+            </div>
         </header>
 
         <!-- WADAH LAYAR AKTIF -->
@@ -387,8 +470,8 @@
     </div>
 
     <!-- MODAL KUSTOM (DIALOG, PETUNJUK, JEDA, PENGATURAN, AKSES PENDIDIK) -->
-    <div id="modal-backdrop" class="hidden fixed inset-0 z-50 bg-[#183629]/75 backdrop-blur-sm flex items-center justify-center p-4">
-        <div id="modal-box" class="game-panel rounded-3xl max-w-lg w-full p-5 sm:p-7 animate-pop relative max-h-[90vh] overflow-y-auto">
+    <div id="modal-backdrop" class="hidden fixed inset-0 z-50 bg-[#183629]/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+        <div id="modal-box" class="game-panel rounded-3xl max-w-lg w-full p-4 sm:p-7 animate-pop relative max-h-[88dvh] overflow-y-auto">
             <div id="modal-content"></div>
         </div>
     </div>
@@ -447,6 +530,12 @@
             },
             // Potret Karakter untuk Kartu Dialog & Pilihan Karakter
             portrait(type, cls = "w-20 h-20") {
+                if (type === 'air') {
+                    return `<svg viewBox="0 0 120 120" class="${cls}" role="img" aria-label="Kelompok Air"><circle cx="60" cy="60" r="56" fill="#DCEEF8" stroke="#2B6CB0" stroke-width="5"/><circle cx="38" cy="52" r="14" fill="#F2C094"/><path d="M24 46c2-11 26-11 28 0z" fill="#1D4E89"/><circle cx="82" cy="52" r="14" fill="#F2C094"/><path d="M68 46c2-11 26-11 28 0z" fill="#2B6CB0"/><circle cx="60" cy="60" r="18" fill="#F2C094" stroke="#DCEEF8" stroke-width="2"/><path d="M41 52c3-14 35-14 38 0z" fill="#0F4C81"/><circle cx="53" cy="59" r="2.8" fill="#183629"/><circle cx="67" cy="59" r="2.8" fill="#183629"/><path d="M54 67q6 5 12 0" fill="none" stroke="#183629" stroke-width="2.5" stroke-linecap="round"/><path d="M22 104c0-20 76-20 76 0z" fill="#2B6CB0"/><path d="M60 76c-8 10-12 16-12 21a12 12 0 0 0 24 0c0-5-4-11-12-21z" fill="#63B3ED" stroke="#183629" stroke-width="2"/></svg>`;
+                }
+                if (type === 'api') {
+                    return `<svg viewBox="0 0 120 120" class="${cls}" role="img" aria-label="Kelompok Api"><circle cx="60" cy="60" r="56" fill="#FDECE2" stroke="#C05621" stroke-width="5"/><circle cx="38" cy="52" r="14" fill="#F2C094"/><path d="M24 46c2-11 26-11 28 0z" fill="#9C4221"/><circle cx="82" cy="52" r="14" fill="#F2C094"/><path d="M68 46c2-11 26-11 28 0z" fill="#DD6B20"/><circle cx="60" cy="60" r="18" fill="#F2C094" stroke="#FDECE2" stroke-width="2"/><path d="M41 52c3-14 35-14 38 0z" fill="#C05621"/><circle cx="53" cy="59" r="2.8" fill="#183629"/><circle cx="67" cy="59" r="2.8" fill="#183629"/><path d="M54 67q6 5 12 0" fill="none" stroke="#183629" stroke-width="2.5" stroke-linecap="round"/><path d="M22 104c0-20 76-20 76 0z" fill="#DD6B20"/><path d="M60 74c-6 8-12 14-12 22a12 12 0 0 0 24 0c0-8-6-14-12-22z" fill="#F6AD55" stroke="#8C3B19" stroke-width="2"/></svg>`;
+                }
                 if (type === 'kiki') {
                     return `<svg viewBox="0 0 120 120" class="${cls}" role="img" aria-label="Kiki Penjaga Rimba"><circle cx="60" cy="60" r="56" fill="#DFECE3" stroke="#276749" stroke-width="5"/><path d="M30 110c0-24 60-24 60 0z" fill="#276749"/><path d="M45 86l15 14 15-14z" fill="#E6B84C"/><circle cx="60" cy="58" r="24" fill="#F2C094"/><path d="M36 52c0-18 48-18 48 0-8-8-18-6-24-10-6 4-16 2-24 10z" fill="#4E342E"/><ellipse cx="60" cy="36" rx="34" ry="8" fill="#183629"/><path d="M40 36c0-16 40-16 40 0z" fill="#276749"/><circle cx="51" cy="57" r="3.5" fill="#183629"/><circle cx="69" cy="57" r="3.5" fill="#183629"/><path d="M52 67q8 8 16 0" fill="none" stroke="#183629" stroke-width="3" stroke-linecap="round"/></svg>`;
                 }
@@ -938,26 +1027,45 @@
          * ============================================================================
          */
         const CHARACTER_PROFILES = {
-            kiki: {
-                id: 'kiki',
-                name: 'Kiki',
-                role: 'Penjaga Rimba',
-                desc: 'Sigap menjaga jalur hutan dari bahaya api.',
-                vestColor: 0x276749,
-                hatColor: 0x183629,
-                scarfColor: 0xE6B84C,
-                skinColor: 0xF2C094
-            },
-            sari: {
-                id: 'sari',
-                name: 'Sari',
-                role: 'Penjelajah Cilik',
-                desc: 'Teliti mengamati alam dan menyayangi satwa.',
+            air: {
+                id: 'air',
+                name: 'Kelompok Air',
+                role: 'Penjaga Sungai & Hutan',
+                desc: 'Rombongan penjaga hutan yang sejuk, sigap melindungi mata air dan memadamkan percikan api.',
                 vestColor: 0x2B6CB0,
-                hatColor: 0xD97343,
-                scarfColor: 0xF6F1E3,
-                skinColor: 0xF2C094
+                hatColor: 0x1D4E89,
+                scarfColor: 0x90CDF4,
+                skinColor: 0xF2C094,
+                membersPalette: [
+                    { vestColor: 0x2B6CB0, hatColor: 0x1D4E89, scarfColor: 0x90CDF4, skinColor: 0xF2C094, hatStyle: 'kiki' },
+                    { vestColor: 0x319795, hatColor: 0x234E52, scarfColor: 0xB2F5EA, skinColor: 0xE5AE7E, hatStyle: 'sari' },
+                    { vestColor: 0x3A86B7, hatColor: 0x1E4E8C, scarfColor: 0xF6F1E3, skinColor: 0xF2C094, hatStyle: 'sari' },
+                    { vestColor: 0x2C7A7B, hatColor: 0x1D4E89, scarfColor: 0x90CDF4, skinColor: 0xE5AE7E, hatStyle: 'kiki' },
+                    { vestColor: 0x4299E1, hatColor: 0x2B6CB0, scarfColor: 0xBEE3F8, skinColor: 0xF2C094, hatStyle: 'kiki' },
+                    { vestColor: 0x38B2AC, hatColor: 0x285E61, scarfColor: 0xF6F1E3, skinColor: 0xE5AE7E, hatStyle: 'sari' }
+                ]
             },
+            api: {
+                id: 'api',
+                name: 'Kelompok Api',
+                role: 'Pasukan Siaga Rimba',
+                desc: 'Rombongan penjaga hutan yang berani, cekatan mengenali bahaya api dan menjaga keselamatan warga.',
+                vestColor: 0xD97343,
+                hatColor: 0x9C4221,
+                scarfColor: 0xF6E05E,
+                skinColor: 0xF2C094,
+                membersPalette: [
+                    { vestColor: 0xD97343, hatColor: 0x9C4221, scarfColor: 0xF6E05E, skinColor: 0xF2C094, hatStyle: 'kiki' },
+                    { vestColor: 0xC53030, hatColor: 0x742A2A, scarfColor: 0xFBD38D, skinColor: 0xE5AE7E, hatStyle: 'sari' },
+                    { vestColor: 0xDD6B20, hatColor: 0x9C4221, scarfColor: 0xF6F1E3, skinColor: 0xF2C094, hatStyle: 'sari' },
+                    { vestColor: 0xD69E2E, hatColor: 0x744210, scarfColor: 0xFBD38D, skinColor: 0xE5AE7E, hatStyle: 'kiki' },
+                    { vestColor: 0xE53E3E, hatColor: 0x9B2C2C, scarfColor: 0xFEFCBF, skinColor: 0xF2C094, hatStyle: 'kiki' },
+                    { vestColor: 0xED8936, hatColor: 0x9C4221, scarfColor: 0xF6F1E3, skinColor: 0xE5AE7E, hatStyle: 'sari' }
+                ]
+            }
+        };
+
+        const NPC_PROFILES = {
             pak_joko: {
                 id: 'pak_joko',
                 name: 'Pak Joko',
@@ -1404,7 +1512,9 @@
             screen: 'welcome',
             playerName: '',
             playerGroup: 'SD Dusun Cuntel',
-            characterId: 'kiki',
+            memberCount: 0,
+            teamMembers: ['', '', '', '', '', ''],
+            characterId: 'air',
             tutorialStep: 0,
             storyStep: 0,
             unlockedMissions: [1],
@@ -1416,6 +1526,9 @@
             preTest: { completed: false, answers: [], score: 0, correctCount: 0 },
             postTest: { completed: false, answers: [], score: 0, correctCount: 0 },
             testRuntime: null,
+            gameStartTime: null,
+            gameDurationMs: null,
+            gameTimerInterval: null,
             paused: false,
             settings: {
                 quality: 'medium',
@@ -1427,17 +1540,20 @@
         };
 
         function syncCurrentParticipantRecord() {
-            const displayName = state.playerName.trim() || 'Penjaga Hutan Cilik';
-            const charName = CHARACTER_PROFILES[state.characterId]?.name || 'Kiki';
+            const displayName = state.playerName.trim() || 'Kelompok Penjaga Hutan';
+            const charName = CHARACTER_PROFILES[state.characterId]?.name || 'Kelompok Air';
+            const membersList = (state.teamMembers || []).slice(0, state.memberCount || 4).map(m => m.trim()).filter(Boolean);
             const record = {
                 id: state.currentSessionId,
                 name: displayName,
                 group: state.playerGroup || 'SD Dusun Cuntel',
+                members: membersList.join(', '),
                 character: charName,
                 preScore: state.preTest.completed ? state.preTest.score : null,
                 postScore: state.postTest.completed ? state.postTest.score : null,
                 completedMissions: state.completedMissions.length,
                 gameScore: state.score,
+                durationMs: state.gameDurationMs,
                 timestamp: new Date().toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
             };
 
@@ -1497,7 +1613,6 @@
             let isDragging = false;
             let dragMoved = false;
             let prevPointer = { x: 0, y: 0 };
-            let holdMoveVec = null;
             let pendingLandmarkModalTimer = null;
 
             const keysPressed = {};
@@ -2187,9 +2302,10 @@
                 scene.add(mission5GardenGroup);
             }
 
-            function createHumanoidMesh(charId) {
-                const profile = CHARACTER_PROFILES[charId] || CHARACTER_PROFILES.kiki;
+            function createHumanoidMesh(charId, overrideProfile = null) {
+                const profile = overrideProfile || CHARACTER_PROFILES[charId] || NPC_PROFILES[charId] || CHARACTER_PROFILES.air;
                 const isAdult = charId === 'pak_joko';
+                const hatStyle = overrideProfile?.hatStyle || charId;
                 const group = new THREE.Group();
 
                 const skinMat = new THREE.MeshStandardMaterial({ color: profile.skinColor, roughness: 0.72 });
@@ -2235,12 +2351,12 @@
 
                 const hatGroup = new THREE.Group();
                 hatGroup.position.y = headY + 0.32;
-                if (charId === 'kiki') {
+                if (hatStyle === 'kiki') {
                     const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.64, 0.64, 0.07, 16), hatMat);
                     const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.42, 0.28, 16), vestMat);
                     crown.position.y = 0.14;
                     hatGroup.add(brim, crown);
-                } else if (charId === 'sari') {
+                } else if (hatStyle === 'sari') {
                     const cap = new THREE.Mesh(new THREE.SphereGeometry(0.43, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), hatMat);
                     const visor = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.06, 0.34), hatMat);
                     visor.position.set(0, 0.02, 0.36);
@@ -2275,14 +2391,41 @@
                 if (playerGroup) {
                     scene.remove(playerGroup);
                 }
-                const built = createHumanoidMesh(charId);
-                playerGroup = built.group;
-                playerParts = built.parts;
+                const count = Math.max(0, Math.min(6, Number(state.memberCount) || 0));
+                const profile = CHARACTER_PROFILES[charId] || CHARACTER_PROFILES.air;
+                const palette = profile.membersPalette || [profile];
+                const formations = {
+                    0: [],
+                    1: [{ x: 0, z: 0, phase: 0 }],
+                    2: [{ x: -0.52, z: 0, phase: 0 }, { x: 0.52, z: 0, phase: 0.9 }],
+                    3: [{ x: 0, z: 0.42, phase: 0 }, { x: -0.62, z: -0.35, phase: 0.9 }, { x: 0.62, z: -0.35, phase: 1.8 }],
+                    4: [{ x: -0.58, z: 0.35, phase: 0 }, { x: 0.58, z: 0.25, phase: 0.9 }, { x: -0.62, z: -0.58, phase: 1.7 }, { x: 0.62, z: -0.68, phase: 2.5 }],
+                    5: [{ x: -0.55, z: 0.45, phase: 0 }, { x: 0.55, z: 0.45, phase: 0.8 }, { x: -0.95, z: -0.5, phase: 1.5 }, { x: 0, z: -0.6, phase: 2.2 }, { x: 0.95, z: -0.5, phase: 2.9 }],
+                    6: [{ x: -0.92, z: 0.42, phase: 0 }, { x: 0, z: 0.5, phase: 0.7 }, { x: 0.92, z: 0.42, phase: 1.4 }, { x: -0.92, z: -0.55, phase: 2.1 }, { x: 0, z: -0.62, phase: 2.8 }, { x: 0.92, z: -0.55, phase: 3.5 }]
+                };
+                const offsets = formations[count] || formations[4];
+                const scale = count === 1 ? 0.9 : count >= 5 ? 0.7 : 0.76;
+
+                playerGroup = new THREE.Group();
+                playerParts = [];
+
+                offsets.forEach((off, idx) => {
+                    const built = createHumanoidMesh(charId, palette[idx % palette.length]);
+                    built.group.scale.setScalar(scale);
+                    built.group.position.set(off.x, 0, off.z);
+                    playerGroup.add(built.group);
+                    playerParts.push({
+                        root: built.group,
+                        parts: built.parts,
+                        phase: off.phase
+                    });
+                });
+
                 playerGroup.position.copy(playerPos);
                 scene.add(playerGroup);
 
                 if (jokoNpcGroup) {
-                    jokoNpcGroup.visible = (charId !== 'pak_joko');
+                    jokoNpcGroup.visible = true;
                 }
             }
 
@@ -2768,15 +2911,6 @@
                 playerTarget.set(safeO.x, 0, safeO.z);
             }
 
-            function setHoldMove(dx, dz) {
-                if (dx === 0 && dz === 0) {
-                    holdMoveVec = null;
-                } else {
-                    holdMoveVec = { dx, dz };
-                    movePlayerByVector(dx, dz);
-                }
-            }
-
             function walkToLandmark(missionId, autoOpenModal = false) {
                 const lm = LANDMARKS_CONFIG.find(l => l.id === missionId);
                 if (!lm) return;
@@ -2924,6 +3058,10 @@
                     return;
                 }
 
+                const isMobile = window.innerWidth < 640;
+                const topSafe = isMobile ? 128 : 65;
+                const bottomSafe = isMobile ? window.innerHeight - 125 : window.innerHeight - 90;
+
                 let html = '';
                 LANDMARKS_CONFIG.forEach(lm => {
                     const worldPt = new THREE.Vector3(lm.pos.x, 2.7, lm.pos.z);
@@ -2931,7 +3069,7 @@
                     if (worldPt.z > 1) return;
                     const sx = (worldPt.x * 0.5 + 0.5) * window.innerWidth;
                     const sy = (-worldPt.y * 0.5 + 0.5) * window.innerHeight;
-                    if (sx < 20 || sx > window.innerWidth - 20 || sy < 65 || sy > window.innerHeight - 90) return;
+                    if (sx < 24 || sx > window.innerWidth - 24 || sy < topSafe || sy > bottomSafe) return;
 
                     const done = state.completedMissions.includes(lm.id);
                     const unlocked = state.unlockedMissions.includes(lm.id);
@@ -2950,23 +3088,16 @@
                 const npcList = [
                     { id: 'monkey', label: 'Monyet Ekor Panjang', pos: new THREE.Vector3(8.5, 3.1, 17.5), cls: 'bg-[#F5E8D6] text-[#603D2C] border-[#8A5B3C]' },
                     { id: 'bobi', label: 'Bobi (Rusa)', pos: new THREE.Vector3(-11.5, 2.9, -6.5), cls: 'bg-[#F5E8D6] text-[#8C4312] border-[#C06C2B]' },
-                    { id: 'owl', label: 'Prof. Hantu', pos: new THREE.Vector3(4.8, 3.9, 5.2), cls: 'bg-[#DCEEF8] text-[#1D4E89] border-[#2B6CB0]' }
+                    { id: 'owl', label: 'Prof. Hantu', pos: new THREE.Vector3(4.8, 3.9, 5.2), cls: 'bg-[#DCEEF8] text-[#1D4E89] border-[#2B6CB0]' },
+                    { id: 'pak_joko', label: 'Pak Joko', pos: new THREE.Vector3(-2.8, 3.0, 5.4), cls: 'bg-[#EFE7D6] text-[#183629] border-[#556B2F]' }
                 ];
-                if (state.characterId !== 'pak_joko') {
-                    npcList.push({
-                        id: 'pak_joko',
-                        label: 'Pak Joko',
-                        pos: new THREE.Vector3(-2.8, 3.0, 5.4),
-                        cls: 'bg-[#EFE7D6] text-[#183629] border-[#556B2F]'
-                    });
-                }
 
                 npcList.forEach(npc => {
                     const p = npc.pos.clone().project(camera);
                     if (p.z > 1) return;
                     const sx = (p.x * 0.5 + 0.5) * window.innerWidth;
                     const sy = (-p.y * 0.5 + 0.5) * window.innerHeight;
-                    if (sx < 20 || sx > window.innerWidth - 20 || sy < 65 || sy > window.innerHeight - 90) return;
+                    if (sx < 24 || sx > window.innerWidth - 24 || sy < topSafe || sy > bottomSafe) return;
 
                     html += `
                     <button onclick="talkToNPC('${npc.id}')"
@@ -2999,10 +3130,6 @@
                         if (keysPressed['s'] || keysPressed['arrowdown']) dz += speed;
                         if (keysPressed['a'] || keysPressed['arrowleft']) dx -= speed;
                         if (keysPressed['d'] || keysPressed['arrowright']) dx += speed;
-                        if (holdMoveVec) {
-                            dx += holdMoveVec.dx * speed;
-                            dz += holdMoveVec.dz * speed;
-                        }
                         if (dx !== 0 || dz !== 0) {
                             playerWaypoints = [];
                             const candX = playerPos.x + dx;
@@ -3018,7 +3145,7 @@
                     const dist = toTarget.length();
                     const bridgeElev = isOnBridge(playerPos.x, playerPos.z) ? 0.36 : 0;
 
-                    if (playerGroup) {
+                    if (playerGroup && Array.isArray(playerParts)) {
                         if (dist > 0.14) {
                             toTarget.normalize();
                             const step = Math.min(dist, 6.8 * dt);
@@ -3035,26 +3162,32 @@
 
                             playerGroup.position.x = playerPos.x;
                             playerGroup.position.z = playerPos.z;
+                            playerGroup.position.y = bridgeElev;
                             playerGroup.rotation.y = Math.atan2(toTarget.x, toTarget.z);
 
-                            const swing = Math.sin(elapsed * 12) * 0.55;
-                            playerParts.leftLeg.rotation.x = swing;
-                            playerParts.rightLeg.rotation.x = -swing;
-                            playerParts.leftArm.rotation.x = -swing * 0.8;
-                            playerParts.rightArm.rotation.x = swing * 0.8;
-                            playerGroup.position.y = bridgeElev + Math.abs(Math.sin(elapsed * 12)) * 0.12;
+                            playerParts.forEach(member => {
+                                const swing = Math.sin(elapsed * 12 + member.phase) * 0.55;
+                                member.parts.leftLeg.rotation.x = swing;
+                                member.parts.rightLeg.rotation.x = -swing;
+                                member.parts.leftArm.rotation.x = -swing * 0.8;
+                                member.parts.rightArm.rotation.x = swing * 0.8;
+                                member.root.position.y = Math.abs(Math.sin(elapsed * 12 + member.phase)) * 0.1;
+                            });
                         } else if (playerWaypoints.length > 0) {
                             playerTarget.copy(playerWaypoints.shift());
                         } else {
-                            playerParts.leftLeg.rotation.x *= 0.85;
-                            playerParts.rightLeg.rotation.x *= 0.85;
-                            playerParts.leftArm.rotation.x *= 0.85;
-                            playerParts.rightArm.rotation.x = (camMode === 'characterPreview' || camMode === 'celebrate')
-                                ? -2.4 + Math.sin(elapsed * 8) * 0.35
-                                : playerParts.rightArm.rotation.x * 0.85;
-                            playerGroup.position.y = bridgeElev + ((camMode === 'celebrate')
-                                ? Math.abs(Math.sin(elapsed * 6)) * 0.55
-                                : Math.sin(elapsed * 2.6) * 0.04);
+                            playerGroup.position.y = bridgeElev;
+                            playerParts.forEach(member => {
+                                member.parts.leftLeg.rotation.x *= 0.85;
+                                member.parts.rightLeg.rotation.x *= 0.85;
+                                member.parts.leftArm.rotation.x *= 0.85;
+                                member.parts.rightArm.rotation.x = (camMode === 'characterPreview' || camMode === 'celebrate')
+                                    ? -2.4 + Math.sin(elapsed * 8 + member.phase) * 0.35
+                                    : member.parts.rightArm.rotation.x * 0.85;
+                                member.root.position.y = (camMode === 'celebrate')
+                                    ? Math.abs(Math.sin(elapsed * 6 + member.phase)) * 0.45
+                                    : Math.sin(elapsed * 2.6 + member.phase) * 0.04;
+                            });
                         }
                     }
 
@@ -3110,8 +3243,8 @@
                         camGoalPos.set(Math.sin(a) * 26, 13.5, Math.cos(a) * 26);
                         camGoalLook.set(0, 2.2, 2);
                     } else if (camMode === 'characterPreview') {
-                        camGoalPos.set(Math.sin(orbitYaw) * 4.4, 2.3, 17 + Math.cos(orbitYaw) * 4.4);
-                        camGoalLook.set(0, 1.35, 17);
+                        camGoalPos.set(Math.sin(orbitYaw) * 5.6, 2.7, 17 + Math.cos(orbitYaw) * 5.6);
+                        camGoalLook.set(0, 1.15, 17);
                     } else if (camMode === 'story') {
                         const isJoko = state.characterId === 'pak_joko';
                         if (state.storyStep === 0 || (isJoko && state.storyStep === 4)) {
@@ -3161,7 +3294,6 @@
                 setCameraMode,
                 walkToLandmark,
                 movePlayerByVector,
-                setHoldMove,
                 focusMission1Object,
                 applyQualitySettings,
                 resetPlayerSpawn
@@ -3184,6 +3316,7 @@
             }
             if (screen === 'pretest') {
                 initTestRuntime('pre');
+                startGameTimer();
             }
             if (screen === 'posttest') {
                 initTestRuntime('post');
@@ -3201,7 +3334,7 @@
                 if (missionId === 1) ForestWorld3D.setCameraMode('mission1');
                 else if (missionId === 5) ForestWorld3D.setCameraMode('mission5');
                 else ForestWorld3D.setCameraMode('explore');
-            } else if (screen === 'achievements') {
+            } else if (screen === 'achievements' || screen === 'certificate') {
                 ForestWorld3D.setCameraMode('celebrate');
             } else {
                 ForestWorld3D.setCameraMode('orbitWelcome');
@@ -3230,11 +3363,28 @@
 
             const name = state.playerName.trim() || 'Penjaga Hutan';
             document.getElementById('hud-player-label').textContent = name;
+            const mobilePlayerEl = document.getElementById('hud-player-label-mobile');
+            if (mobilePlayerEl) mobilePlayerEl.textContent = name;
             const doneCount = state.completedMissions.length;
+            const pct = `${(doneCount / 5) * 100}%`;
             document.getElementById('hud-progress-label').textContent = `${doneCount} / 5 Pos`;
-            document.getElementById('hud-progress-bar').style.width = `${(doneCount / 5) * 100}%`;
+            document.getElementById('hud-progress-bar').style.width = pct;
+            const mobileProgLabel = document.getElementById('hud-progress-label-mobile');
+            const mobileProgBar = document.getElementById('hud-progress-bar-mobile');
+            if (mobileProgLabel) mobileProgLabel.textContent = `${doneCount} / 5 Pos`;
+            if (mobileProgBar) mobileProgBar.style.width = pct;
             document.getElementById('hud-score').textContent = state.score;
             document.getElementById('hud-badge-count').textContent = doneCount;
+            // Timer: tampilkan saat timer berjalan atau selesai
+            const timerWrap = document.getElementById('hud-timer-wrap');
+            const timerEl = document.getElementById('hud-timer');
+            if (timerWrap && timerEl) {
+                const isRunning = state.gameStartTime && !state.gameDurationMs;
+                const isDone = !!state.gameDurationMs;
+                timerWrap.classList.toggle('hidden', !isRunning && !isDone);
+                if (isDone) timerEl.textContent = formatDuration(state.gameDurationMs);
+                else if (isRunning) timerEl.textContent = formatDuration(Date.now() - state.gameStartTime);
+            }
         }
 
         function renderScreen() {
@@ -3251,6 +3401,7 @@
                 case 'posttest': container.innerHTML = renderTestScreen('post'); break;
                 case 'achievements': container.innerHTML = renderAchievementsScreen(); break;
                 case 'report': container.innerHTML = renderReportScreen(); break;
+                case 'certificate': container.innerHTML = renderCertificateScreen(); break;
                 case 'educator': container.innerHTML = renderEducatorDashboard(); break;
             }
         }
@@ -3306,32 +3457,70 @@
             </section>`;
         }
 
+        function renderMemberInputsHtml(count) {
+            if (count <= 0) {
+                return `
+                <div class="rounded-2xl border-2 border-dashed border-[#689F77] bg-[#F6F1E3]/70 p-3 text-center text-xs sm:text-sm font-bold text-[#276749]">
+                    Geser tombol ke kanan (1–6) untuk memilih jumlah anak!
+                </div>`;
+            }
+            return `
+                <div class="grid grid-cols-2 gap-2">
+                    ${Array.from({ length: count }, (_, idx) => `
+                        <input type="text" maxlength="20" value="${escapeHtml((state.teamMembers && state.teamMembers[idx]) || '')}"
+                            oninput="state.teamMembers[${idx}] = this.value"
+                            onkeydown="if(event.key==='Enter') confirmPlayerName()"
+                            placeholder="Anggota ${idx + 1}"
+                            aria-label="Anggota ${idx + 1}"
+                            class="w-full text-sm font-bold text-[#183629] card-surface border-2 border-[#689F77]/80 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E6B84C]">
+                    `).join('')}
+                </div>`;
+        }
+
         function renderNameScreen() {
+            const pct = (state.memberCount / 6) * 100;
             return `
             <section class="flex-1 flex items-center justify-center p-4 interactive-panel animate-pop">
-                <div class="game-panel rounded-3xl max-w-lg w-full p-6 sm:p-8 text-center">
+                <div class="game-panel rounded-3xl max-w-lg w-full p-5 sm:p-8 text-center">
                     <div class="w-16 h-16 rounded-2xl bg-[#DFECE3] border-3 border-[#276749] mx-auto flex items-center justify-center mb-3">
                         ${IconSVG.badge("w-9 h-9")}
                     </div>
                     <span class="text-xs font-extrabold uppercase tracking-wider text-[#276749]">Langkah 1 dari 3</span>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-[#183629] mt-1">Siapa Nama Panggilanmu?</h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-[#183629] mt-1">Apa Nama Kelompokmu?</h2>
 
-                    <div class="mt-5 text-left space-y-3">
+                    <div class="mt-4 text-left space-y-3">
+                        <div class="card-surface border-2 border-[#689F77]/75 rounded-2xl p-3 sm:p-3.5">
+                            <div class="flex items-center justify-between gap-2 mb-2">
+                                <label for="input-member-slider" class="text-xs font-extrabold text-[#183629]">
+                                    Jumlah Anak (Geser ke Kanan):
+                                </label>
+                                <span id="member-count-badge" class="px-3 py-0.5 rounded-full text-xs font-extrabold ${state.memberCount > 0 ? 'bg-[#276749] text-[#FCF9F2]' : 'bg-[#E6B84C]/50 text-[#183629]'}">
+                                    ${state.memberCount} Anak
+                                </span>
+                            </div>
+                            <input id="input-member-slider" type="range" min="0" max="6" step="1" value="${state.memberCount}"
+                                oninput="updateMemberSlider(this.value)"
+                                class="forest-slider"
+                                style="background: linear-gradient(90deg, #3B875B 0%, #3B875B ${pct}%, #E5E0D0 ${pct}%, #E5E0D0 100%);">
+                            <div class="flex justify-between text-[11px] font-extrabold text-[#183629]/75 mt-1.5 px-1">
+                                ${[0, 1, 2, 3, 4, 5, 6].map(n => `<span>${n}</span>`).join('')}
+                            </div>
+                        </div>
                         <div>
-                            <label for="input-player-name" class="block text-xs font-extrabold text-[#183629] mb-1">Nama Panggilan / Kode Siswa:</label>
+                            <label for="input-player-name" class="block text-xs font-extrabold text-[#183629] mb-1">Nama Kelompok:</label>
                             <input id="input-player-name" type="text" maxlength="26" value="${escapeHtml(state.playerName)}"
                                 oninput="state.playerName = this.value"
                                 onkeydown="if(event.key==='Enter') confirmPlayerName()"
-                                placeholder="Contoh: Siswa 01"
-                                class="w-full text-lg font-extrabold text-[#183629] card-surface border-3 border-[#276749] rounded-2xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-[#E6B84C]">
+                                placeholder="Contoh: Kelompok Elang 1"
+                                class="w-full text-lg font-extrabold text-[#183629] card-surface border-3 border-[#276749] rounded-2xl px-4 py-2.5 focus:outline-none focus:ring-4 focus:ring-[#E6B84C]">
                         </div>
                         <div>
-                            <label for="input-player-group" class="block text-xs font-extrabold text-[#183629] mb-1">Kelas:</label>
-                            <input id="input-player-group" type="text" maxlength="28" value="${escapeHtml(state.playerGroup)}"
-                                oninput="state.playerGroup = this.value"
-                                onkeydown="if(event.key==='Enter') confirmPlayerName()"
-                                placeholder="Contoh: Kelas 4 SD Dusun Cuntel"
-                                class="w-full text-base font-bold text-[#183629] card-surface border-2 border-[#689F77] rounded-2xl px-4 py-2.5 focus:outline-none focus:ring-4 focus:ring-[#E6B84C]">
+                            <label id="member-inputs-label" class="block text-xs font-extrabold text-[#183629] mb-1.5">
+                                Daftar Anggota (${state.memberCount} Anak):
+                            </label>
+                            <div id="member-inputs-container">
+                                ${renderMemberInputsHtml(state.memberCount)}
+                            </div>
                         </div>
                     </div>
 
@@ -3339,55 +3528,95 @@
                         <button onclick="navigateTo('welcome')" class="btn-3d btn-cream py-3.5 rounded-2xl font-extrabold text-base">
                             ← Kembali
                         </button>
-                        <button onclick="confirmPlayerName()" class="btn-3d btn-green py-3.5 rounded-2xl font-extrabold text-base">
-                            Pilih Karakter →
+                        <button id="name-next-btn" onclick="confirmPlayerName()" ${state.memberCount < 1 ? 'disabled' : ''} class="btn-3d btn-green py-3.5 rounded-2xl font-extrabold text-base">
+                            Pilih Tim 3D →
                         </button>
                     </div>
                 </div>
             </section>`;
         }
 
+        function updateMemberSlider(val) {
+            const count = Math.max(0, Math.min(6, Number(val) || 0));
+            if (count !== state.memberCount) {
+                AudioEngine.click();
+            }
+            state.memberCount = count;
+            ForestWorld3D.buildPlayerCharacter(state.characterId);
+
+            const slider = document.getElementById('input-member-slider');
+            if (slider) {
+                const pct = (count / 6) * 100;
+                slider.style.background = `linear-gradient(90deg, #3B875B 0%, #3B875B ${pct}%, #E5E0D0 ${pct}%, #E5E0D0 100%)`;
+            }
+
+            const badge = document.getElementById('member-count-badge');
+            if (badge) {
+                badge.textContent = `${count} Anak`;
+                badge.className = `px-3 py-0.5 rounded-full text-xs font-extrabold ${count > 0 ? 'bg-[#276749] text-[#FCF9F2]' : 'bg-[#E6B84C]/50 text-[#183629]'}`;
+            }
+
+            const label = document.getElementById('member-inputs-label');
+            if (label) {
+                label.textContent = `Daftar Anggota (${count} Anak):`;
+            }
+
+            const container = document.getElementById('member-inputs-container');
+            if (container) {
+                container.innerHTML = renderMemberInputsHtml(count);
+            }
+
+            const nextBtn = document.getElementById('name-next-btn');
+            if (nextBtn) {
+                nextBtn.disabled = count < 1;
+            }
+        }
+
         function confirmPlayerName() {
+            if (state.memberCount < 1) return;
             if (!state.playerName.trim()) {
-                state.playerName = "Penjaga Hutan Cilik";
+                state.playerName = "Kelompok Penjaga Hutan";
             }
             navigateTo('character');
         }
 
         function renderCharacterScreen() {
+            if (!CHARACTER_PROFILES[state.characterId]) {
+                state.characterId = 'air';
+            }
             const chars = Object.values(CHARACTER_PROFILES);
             const active = CHARACTER_PROFILES[state.characterId];
 
             return `
-            <section class="flex-1 flex flex-col justify-between p-4 sm:p-6 max-w-4xl mx-auto w-full">
-                <div class="interactive-panel game-panel-soft rounded-3xl p-4 text-center animate-pop">
+            <section class="flex-1 flex flex-col justify-between p-3 sm:p-6 max-w-4xl mx-auto w-full">
+                <div class="interactive-panel game-panel-soft rounded-3xl p-3 sm:p-4 text-center animate-pop">
                     <span class="text-xs font-extrabold uppercase tracking-wider text-[#276749]">Langkah 2 dari 3</span>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-[#183629]">Pilih Karakter 3D Kamu</h2>
-                    <p class="text-xs sm:text-sm font-bold text-[#183629]/80">Geser layar untuk memutar karakter 3D!</p>
+                    <h2 class="text-xl sm:text-3xl font-bold text-[#183629]">Pilih Tim Rombongan 3D</h2>
+                    <p class="text-xs sm:text-sm font-bold text-[#183629]/80">Geser layar untuk memutar rombongan ${state.memberCount} penjaga hutan!</p>
                 </div>
 
-                <div class="flex-1 min-h-[210px]"></div>
+                <div class="flex-1 min-h-[140px] sm:min-h-[210px]"></div>
 
-                <div class="interactive-panel game-panel rounded-3xl p-4 sm:p-6 animate-pop">
-                    <div class="grid grid-cols-3 gap-2.5 sm:gap-4 mb-4">
+                <div class="interactive-panel game-panel rounded-3xl p-3.5 sm:p-6 animate-pop">
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-3 sm:mb-4 max-w-md mx-auto">
                         ${chars.map(c => {
                             const selected = state.characterId === c.id;
                             return `
                             <button onclick="selectCharacter3D('${c.id}')"
-                                class="p-3 rounded-2xl border-3 transition-all flex flex-col items-center text-center ${
+                                class="p-2 sm:p-3 rounded-2xl border-3 transition-all flex flex-col items-center text-center ${
                                     selected
                                         ? 'bg-[#E6B84C]/35 border-[#183629] scale-[1.03] shadow-md'
                                         : 'card-surface border-[#689F77]/60 hover:border-[#276749]'
                                 }">
-                                ${IconSVG.portrait(c.id, "w-14 h-14 sm:w-16 sm:h-16 mb-1.5")}
-                                <span class="font-extrabold text-sm sm:text-base text-[#183629]">${c.name}</span>
-                                <span class="text-[11px] font-bold text-[#276749]">${c.role}</span>
+                                ${IconSVG.portrait(c.id, "w-12 h-12 sm:w-16 sm:h-16 mb-1")}
+                                <span class="font-extrabold text-xs sm:text-base text-[#183629] leading-tight">${c.name}</span>
+                                <span class="text-[10px] sm:text-[11px] font-bold text-[#276749] leading-tight mt-0.5">${c.role}</span>
                             </button>`;
                         }).join('')}
                     </div>
 
-                    <div class="bg-[#DFECE3] border-2 border-[#276749]/40 rounded-2xl p-3 text-center mb-4">
-                        <p class="text-sm sm:text-base font-bold text-[#183629]">
+                    <div class="bg-[#DFECE3] border-2 border-[#276749]/40 rounded-2xl p-2.5 sm:p-3 text-center mb-3 sm:mb-4">
+                        <p class="text-xs sm:text-base font-bold text-[#183629]">
                             <strong>${active.name}:</strong> ${active.desc}
                         </p>
                     </div>
@@ -3415,7 +3644,7 @@
             const steps = [
                 {
                     title: "1. Jalan-Jalan di Hutan 3D",
-                    text: "Ketuk Pos Misi di layar atau pakai tombol arah.",
+                    text: "Ketuk Pos Misi atau tanah di layar untuk berjalan, dan geser untuk memutar kamera.",
                     icon: IconSVG.compass("w-12 h-12")
                 },
                 {
@@ -3488,6 +3717,39 @@
          * 9. LAYAR 5 & 10: PRE-TEST DAN POST-TEST (DENGAN GAMBAR VISUAL DI SETIAP SOAL)
          * ============================================================================
          */
+        function formatDuration(ms) {
+            if (!ms && ms !== 0) return '--:--';
+            const totalSec = Math.floor(ms / 1000);
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.floor((totalSec % 3600) / 60);
+            const s = totalSec % 60;
+            if (h > 0) return `${h}j ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}d`;
+            return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        function startGameTimer() {
+            if (state.gameStartTime) return; // sudah berjalan
+            state.gameStartTime = Date.now();
+            state.gameDurationMs = null;
+            if (state.gameTimerInterval) clearInterval(state.gameTimerInterval);
+            state.gameTimerInterval = setInterval(() => {
+                const el = document.getElementById('hud-timer');
+                if (el) el.textContent = formatDuration(Date.now() - state.gameStartTime);
+            }, 1000);
+        }
+
+        function stopGameTimer() {
+            if (!state.gameStartTime) return;
+            state.gameDurationMs = Date.now() - state.gameStartTime;
+            if (state.gameTimerInterval) { clearInterval(state.gameTimerInterval); state.gameTimerInterval = null; }
+        }
+
+        function resetGameTimer() {
+            if (state.gameTimerInterval) { clearInterval(state.gameTimerInterval); state.gameTimerInterval = null; }
+            state.gameStartTime = null;
+            state.gameDurationMs = null;
+        }
+
         function initTestRuntime(type) {
             const shuffledQuestions = ASSESSMENT_BANK[type].map(q => ({
                 ...q,
@@ -3503,23 +3765,40 @@
             };
         }
 
-        function renderPreTestImagePlaceholder(questionNumber) {
-            const basePath = `assets/kuis-awal-soal-${questionNumber}`;
+        function renderPostTestImagePlaceholder(questionNumber) {
+            const jpegPath = `assets/kuisahkir-${questionNumber} (1).jpeg`;
+            const legacyBase = `assets/kuisahkir-${questionNumber}`;
             return `
-                <div class="mission-art mb-3">
-                    <picture>
-                        <source srcset="${basePath}.gif" type="image/gif">
-                        <img
-                            src="${basePath}.jpg"
-                            alt="Placeholder visual kuis awal soal ${questionNumber}"
-                            class="w-full rounded-2xl border-2 border-[#8FB899]/70 bg-[#DCEEF8] object-cover"
-                            style="aspect-ratio: 320 / 145;"
-                            onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
-                        >
-                    </picture>
-                    <div class="hidden rounded-2xl border-2 border-dashed border-[#6BAED6] bg-[#EAF6FD] text-[#183629] px-4 py-6 text-center font-extrabold text-sm sm:text-base">
-                        Placeholder gambar kuis awal soal ${questionNumber}<br>
-                        Simpan file: ${basePath}.gif atau ${basePath}.jpg
+                <div class="mission-art w-full max-w-[280px] sm:max-w-[300px] mx-auto mb-2">
+                    <img
+                        src="${jpegPath}"
+                        alt="Ilustrasi kuis akhir soal ${questionNumber}"
+                        class="w-full max-h-[135px] rounded-xl border-2 border-[#276749]/70 bg-[#DCEEF8] object-cover"
+                        style="aspect-ratio: 320 / 145;"
+                        onerror="if(!this.dataset.f1){this.dataset.f1=1;this.src='${legacyBase}.jpg';}else if(!this.dataset.f2){this.dataset.f2=1;this.src='${legacyBase}.gif';}else{this.style.display='none';this.nextElementSibling.classList.remove('hidden');}"
+                    >
+                    <div class="hidden rounded-xl border-2 border-dashed border-[#6BAED6] bg-[#EAF6FD] text-[#183629] px-3 py-4 text-center font-extrabold text-xs sm:text-sm">
+                        Gambar kuis akhir soal ${questionNumber} belum ditemukan<br>
+                        Simpan file: ${jpegPath}
+                    </div>
+                </div>`;
+        }
+
+        function renderPreTestImagePlaceholder(questionNumber) {
+            const jpegPath = `assets/kuis-awal-${questionNumber}.jpeg`;
+            const legacyBase = `assets/kuis-awal-soal-${questionNumber}`;
+            return `
+                <div class="mission-art w-full max-w-[280px] sm:max-w-[300px] mx-auto mb-2">
+                    <img
+                        src="${jpegPath}"
+                        alt="Ilustrasi kuis awal soal ${questionNumber}"
+                        class="w-full max-h-[135px] rounded-xl border-2 border-[#8FB899]/70 bg-[#DCEEF8] object-cover"
+                        style="aspect-ratio: 320 / 145;"
+                        onerror="if(!this.dataset.f1){this.dataset.f1=1;this.src='${legacyBase}.jpg';}else if(!this.dataset.f2){this.dataset.f2=1;this.src='${legacyBase}.gif';}else{this.style.display='none';this.nextElementSibling.classList.remove('hidden');}"
+                    >
+                    <div class="hidden rounded-xl border-2 border-dashed border-[#6BAED6] bg-[#EAF6FD] text-[#183629] px-3 py-4 text-center font-extrabold text-xs sm:text-sm">
+                        Gambar kuis awal soal ${questionNumber} belum ditemukan<br>
+                        Simpan file: ${jpegPath}
                     </div>
                 </div>`;
         }
@@ -3560,39 +3839,39 @@
             const ind = LEARNING_INDICATORS.find(item => item.id === q.indicatorId);
 
             return `
-            <section class="flex-1 flex items-center justify-center p-3 sm:p-4 interactive-panel animate-pop">
-                <div class="game-panel rounded-3xl max-w-2xl w-full p-4 sm:p-6">
-                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                        <span class="${isPre ? 'bg-[#2B6CB0]' : 'bg-[#276749]'} text-[#FCF9F2] text-xs font-extrabold px-3.5 py-1 rounded-full">
+            <section class="flex-1 flex items-center justify-center p-2 interactive-panel animate-pop">
+                <div class="game-panel rounded-2xl max-w-xl w-full p-3 sm:p-4">
+                    <div class="flex flex-wrap items-center justify-between gap-1.5 mb-2">
+                        <span class="${isPre ? 'bg-[#2B6CB0]' : 'bg-[#276749]'} text-[#FCF9F2] text-xs font-extrabold px-3 py-0.5 rounded-full">
                             ${isPre ? 'KUIS AWAL' : 'KUIS AKHIR'} • Soal ${rt.qIndex + 1} / ${bank.length}
                         </span>
-                        <span class="bg-[#F6F1E3] border-2 border-[#E6B84C] text-[#183629] text-xs font-extrabold px-3 py-1 rounded-full">
+                        <span class="bg-[#F6F1E3] border-2 border-[#E6B84C] text-[#183629] text-xs font-extrabold px-2.5 py-0.5 rounded-full">
                             ${ind.name}
                         </span>
                     </div>
 
-                    <div class="flex gap-2 mb-3">
+                    <div class="flex gap-1.5 mb-2">
                         ${bank.map((_, idx) => `
-                            <span class="h-2.5 flex-1 rounded-full ${idx < rt.qIndex ? 'bg-[#276749]' : idx === rt.qIndex ? 'bg-[#E6B84C] ring-2 ring-[#183629]' : 'bg-[#689F77]/35'}"></span>
+                            <span class="h-2 flex-1 rounded-full ${idx < rt.qIndex ? 'bg-[#276749]' : idx === rt.qIndex ? 'bg-[#E6B84C] ring-2 ring-[#183629]' : 'bg-[#689F77]/35'}"></span>
                         `).join('')}
                     </div>
 
-                    ${isPre ? renderPreTestImagePlaceholder(rt.qIndex + 1) : (q.illustration ? `<div class="mission-art mb-3">${IconSVG.sceneArt(q.illustration)}</div>` : '')}
+                    ${isPre ? renderPreTestImagePlaceholder(rt.qIndex + 1) : renderPostTestImagePlaceholder(rt.qIndex + 1)}
 
-                    <div class="card-surface border-3 border-[#E6B84C] rounded-2xl p-3.5 sm:p-4 mb-3.5 text-center">
-                        <h3 class="text-lg sm:text-xl font-extrabold text-[#183629] leading-snug">${q.question}</h3>
+                    <div class="card-surface border-2 border-[#E6B84C] rounded-xl p-2.5 mb-2.5 text-center">
+                        <h3 class="text-sm sm:text-base font-extrabold text-[#183629] leading-snug">${q.question}</h3>
                     </div>
 
-                    <div class="space-y-2.5">
+                    <div class="space-y-1.5">
                         ${q.options.map((opt, idx) => {
                             const selected = rt.selectedIdx === idx;
                             const letters = ['A', 'B', 'C'];
                             return `
                             <button onclick="selectTestAnswer(${idx})"
-                                class="btn-3d w-full border-3 p-3 sm:p-3.5 rounded-2xl text-left font-extrabold text-sm sm:text-base flex items-center gap-3 ${
+                                class="btn-3d w-full border-2 p-2.5 rounded-xl text-left font-extrabold text-xs sm:text-sm flex items-center gap-2.5 ${
                                     selected ? 'bg-[#E6B84C]/40 border-[#183629]' : 'card-surface hover:bg-[#F6F1E3] border-[#276749]/35'
                                 }">
-                                <span class="w-9 h-9 rounded-xl ${selected ? 'bg-[#183629] text-[#F0C96B]' : 'bg-[#276749] text-[#FCF9F2]'} flex items-center justify-center shrink-0 font-title">
+                                <span class="w-7 h-7 rounded-lg ${selected ? 'bg-[#183629] text-[#F0C96B]' : 'bg-[#276749] text-[#FCF9F2]'} flex items-center justify-center shrink-0 font-title text-xs">
                                     ${letters[idx]}
                                 </span>
                                 <span class="flex-1">${opt.text}</span>
@@ -3600,9 +3879,9 @@
                         }).join('')}
                     </div>
 
-                    <div class="mt-5 flex justify-end">
+                    <div class="mt-2.5 flex justify-end">
                         <button onclick="nextTestStep()" ${rt.selectedIdx === null ? 'disabled' : ''}
-                            class="btn-3d ${isPre ? 'btn-blue' : 'btn-green'} py-3.5 px-7 rounded-2xl font-extrabold text-base">
+                            class="btn-3d ${isPre ? 'btn-blue' : 'btn-green'} py-2.5 px-6 rounded-xl font-extrabold text-sm">
                             ${rt.qIndex + 1 < bank.length ? 'Lanjut →' : (isPre ? 'Selesai Kuis Awal →' : 'Lihat Hasil Belajar →')}
                         </button>
                     </div>
@@ -3641,6 +3920,7 @@
                     AudioEngine.fanfare();
                     state.postTest = { completed: true, answers: [...rt.answers], score, correctCount };
                     rt.finished = true;
+                    stopGameTimer();
                     syncCurrentParticipantRecord();
                     launchConfetti();
                     navigateTo('report');
@@ -3726,41 +4006,41 @@
             const current = dialogues[state.storyStep];
 
             return `
-            <section class="flex-1 flex flex-col justify-between p-4 sm:p-6 max-w-4xl mx-auto w-full">
+            <section class="flex-1 flex flex-col justify-between p-3 sm:p-6 max-w-4xl mx-auto w-full">
                 <div class="flex justify-end interactive-panel">
-                    <button onclick="navigateTo('explore')" class="game-panel-soft px-4 py-2 rounded-2xl text-xs sm:text-sm font-extrabold text-[#183629] hover:bg-[#FCF9F2] transition">
+                    <button onclick="navigateTo('explore')" class="game-panel-soft px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl text-xs sm:text-sm font-extrabold text-[#183629] hover:bg-[#FCF9F2] transition">
                         Lewati →
                     </button>
                 </div>
 
-                <div class="flex-1 min-h-[180px]"></div>
+                <div class="flex-1 min-h-[120px] sm:min-h-[180px]"></div>
 
-                <div class="interactive-panel game-panel rounded-3xl p-5 sm:p-6 animate-pop">
-                    <div class="flex flex-col sm:flex-row items-center gap-4">
-                        <div class="shrink-0">${IconSVG.portrait(current.portrait, "w-20 h-20 sm:w-24 sm:h-24")}</div>
+                <div class="interactive-panel game-panel rounded-3xl p-4 sm:p-6 animate-pop">
+                    <div class="flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
+                        <div class="shrink-0">${IconSVG.portrait(current.portrait, "w-16 h-16 sm:w-24 sm:h-24")}</div>
                         <div class="flex-1 text-center sm:text-left">
                             <span class="inline-block bg-[#E6B84C] border border-[#183629] text-[#183629] text-xs font-extrabold px-3 py-0.5 rounded-full mb-1.5">
                                 ${current.speaker}
                             </span>
-                            <p class="text-base sm:text-xl font-bold text-[#183629] leading-relaxed">
+                            <p class="text-sm sm:text-xl font-bold text-[#183629] leading-relaxed">
                                 "${current.text}"
                             </p>
                         </div>
                     </div>
 
-                    <div class="mt-4 flex items-center justify-between gap-3">
+                    <div class="mt-4 flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
                         <div class="flex gap-2">
                             ${dialogues.map((_, i) => `
-                                <span class="h-3 rounded-full ${i === state.storyStep ? 'w-8 bg-[#276749]' : 'w-3 bg-[#689F77]/50'}"></span>
+                                <span class="h-2.5 sm:h-3 rounded-full ${i === state.storyStep ? 'w-8 bg-[#276749]' : 'w-2.5 sm:w-3 bg-[#689F77]/50'}"></span>
                             `).join('')}
                         </div>
-                        <div class="flex gap-2.5">
+                        <div class="flex gap-2.5 w-full sm:w-auto">
                             ${state.storyStep > 0 ? `
-                                <button onclick="prevStoryStep()" class="btn-3d btn-cream py-3 px-4 rounded-2xl font-extrabold text-sm sm:text-base">
+                                <button onclick="prevStoryStep()" class="btn-3d btn-cream flex-1 sm:flex-initial py-2.5 sm:py-3 px-4 rounded-2xl font-extrabold text-sm sm:text-base">
                                     ← Kembali
                                 </button>
                             ` : ''}
-                            <button onclick="nextStoryStep()" class="btn-3d btn-green py-3 px-6 rounded-2xl font-extrabold text-sm sm:text-base">
+                            <button onclick="nextStoryStep()" class="btn-3d btn-green flex-1 sm:flex-initial py-2.5 sm:py-3 px-6 rounded-2xl font-extrabold text-sm sm:text-base">
                                 ${state.storyStep < dialogues.length - 1 ? 'Lanjut →' : 'Jelajah Hutan 3D!'}
                             </button>
                         </div>
@@ -3799,75 +4079,47 @@
             const nextMissionId = [1, 2, 3, 4, 5].find(id => !state.completedMissions.includes(id)) || 5;
 
             return `
-            <section class="flex-1 flex flex-col justify-between p-3 sm:p-5 max-w-6xl mx-auto w-full">
-                <div class="flex flex-wrap items-center justify-between gap-2 interactive-panel">
-                    <div class="game-panel-soft px-4 py-2 rounded-2xl flex items-center gap-2.5 max-w-xl">
-                        ${IconSVG.compass("w-6 h-6 text-[#276749] shrink-0")}
-                        <p class="text-xs sm:text-sm font-extrabold text-[#183629]">
+            <section class="flex-1 flex flex-col justify-between p-2.5 sm:p-5 max-w-6xl mx-auto w-full">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 interactive-panel">
+                    <div class="game-panel-soft px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl flex items-center gap-2 max-w-xl">
+                        ${IconSVG.compass("w-5 h-5 sm:w-6 sm:h-6 text-[#276749] shrink-0")}
+                        <p class="text-[11px] sm:text-sm font-extrabold text-[#183629] leading-snug">
                             ${allDone
                                 ? "Semua 5 Pos selesai! Ayo kerjakan Kuis Akhir."
-                                : `Ketuk Pos ${nextMissionId} di layar atau tombol di bawah!`}
+                                : `Ketuk Pos ${nextMissionId} atau tanah untuk berjalan!`}
                         </p>
                     </div>
 
-                    <div class="flex items-center gap-2">
-                        <button onclick="talkToNPC('owl')" class="btn-3d btn-blue px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <button onclick="talkToNPC('owl')" class="btn-3d btn-blue px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
                             ${IconSVG.bulb("w-4 h-4")}
                             <span>Tanya Prof. Hantu</span>
                         </button>
                         ${allDone ? `
-                            <button onclick="navigateTo(state.postTest.completed ? 'report' : 'posttest')" class="btn-3d btn-yellow px-4 py-2 rounded-2xl text-xs sm:text-sm font-extrabold">
+                            <button onclick="navigateTo(state.postTest.completed ? 'report' : 'posttest')" class="btn-3d btn-yellow px-3 py-1.5 sm:px-4 sm:py-2 rounded-2xl text-xs sm:text-sm font-extrabold">
                                 ${state.postTest.completed ? 'Lihat Laporan' : 'Mulai Kuis Akhir →'}
                             </button>
                         ` : ''}
                     </div>
                 </div>
 
-                <div class="flex-1 flex items-end justify-between py-2">
-                    <div class="interactive-panel game-panel-soft p-2 rounded-2xl grid grid-cols-3 gap-1 w-40 h-40 sm:hidden" aria-label="Kontrol Arah Karakter">
-                        <div></div>
-                        <button aria-label="Atas"
-                            onpointerdown="ForestWorld3D.setHoldMove(0, -1)"
-                            onpointerup="ForestWorld3D.setHoldMove(0, 0)"
-                            onpointerleave="ForestWorld3D.setHoldMove(0, 0)"
-                            class="min-h-[44px] min-w-[44px] bg-[#276749] text-[#FCF9F2] rounded-xl font-bold active:scale-90">▲</button>
-                        <div></div>
-                        <button aria-label="Kiri"
-                            onpointerdown="ForestWorld3D.setHoldMove(-1, 0)"
-                            onpointerup="ForestWorld3D.setHoldMove(0, 0)"
-                            onpointerleave="ForestWorld3D.setHoldMove(0, 0)"
-                            class="min-h-[44px] min-w-[44px] bg-[#276749] text-[#FCF9F2] rounded-xl font-bold active:scale-90">◀</button>
-                        <div class="min-h-[44px] bg-[#E6B84C] rounded-xl flex items-center justify-center text-xs font-extrabold">3D</div>
-                        <button aria-label="Kanan"
-                            onpointerdown="ForestWorld3D.setHoldMove(1, 0)"
-                            onpointerup="ForestWorld3D.setHoldMove(0, 0)"
-                            onpointerleave="ForestWorld3D.setHoldMove(0, 0)"
-                            class="min-h-[44px] min-w-[44px] bg-[#276749] text-[#FCF9F2] rounded-xl font-bold active:scale-90">▶</button>
-                        <div></div>
-                        <button aria-label="Bawah"
-                            onpointerdown="ForestWorld3D.setHoldMove(0, 1)"
-                            onpointerup="ForestWorld3D.setHoldMove(0, 0)"
-                            onpointerleave="ForestWorld3D.setHoldMove(0, 0)"
-                            class="min-h-[44px] min-w-[44px] bg-[#276749] text-[#FCF9F2] rounded-xl font-bold active:scale-90">▼</button>
-                        <div></div>
-                    </div>
-                </div>
+                <div class="flex-1"></div>
 
-                <div class="interactive-panel game-panel rounded-3xl p-3 sm:p-4">
-                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
+                <div class="interactive-panel game-panel rounded-2xl sm:rounded-3xl p-2 sm:p-4">
+                    <div class="flex overflow-x-auto snap-x snap-mandatory gap-2 no-scrollbar pb-0.5 sm:grid sm:grid-cols-5 sm:gap-3 sm:overflow-visible sm:pb-0">
                         ${LANDMARKS_CONFIG.map(lm => {
                             const done = state.completedMissions.includes(lm.id);
                             const unlocked = state.unlockedMissions.includes(lm.id);
                             const mData = MISSIONS_CONTENT[lm.id];
                             return `
                             <button onclick="ForestWorld3D.walkToLandmark(${lm.id}, true)"
-                                class="btn-3d p-2.5 sm:p-3 rounded-2xl border-3 text-left transition-all flex flex-col justify-between ${
+                                class="btn-3d min-w-[138px] snap-start shrink-0 sm:min-w-0 p-2 sm:p-3 rounded-2xl border-3 text-left transition-all flex flex-col justify-between ${
                                     done ? 'bg-[#DFECE3] border-[#276749]'
                                     : unlocked ? 'bg-[#F6F1E3] border-[#C06C2B]'
                                     : 'bg-gray-200/80 border-gray-400 opacity-70'
                                 }">
                                 <div class="flex items-center justify-between w-full mb-1">
-                                    <span class="text-xs font-extrabold px-2 py-0.5 rounded-full ${
+                                    <span class="text-[11px] sm:text-xs font-extrabold px-2 py-0.5 rounded-full ${
                                         done ? 'bg-[#276749] text-[#FCF9F2]' : unlocked ? 'bg-[#E6B84C] text-[#183629]' : 'bg-gray-300 text-gray-600'
                                     }">
                                         ${lm.shortTitle}
@@ -4067,7 +4319,7 @@
             const num = activeIndex + 1;
             const src = `assets/misi1-benda-${num}.gif`;
             return `
-                <div class="w-[150px] sm:w-[180px] lg:w-[210px] rounded-2xl border-3 border-[#8FB899]/75 bg-[#F6F1E3] shadow-lg overflow-hidden">
+                <div class="w-[116px] sm:w-[180px] lg:w-[210px] rounded-2xl border-3 border-[#8FB899]/75 bg-[#F6F1E3] shadow-lg overflow-hidden">
                     <div class="px-2 py-1.5 text-[11px] sm:text-xs font-extrabold text-[#183629] text-center ${isDone ? 'bg-[#DFECE3]' : 'bg-[#DCEEF8]'}">
                         Benda ${num}${isDone ? ' ✓ Sudah Diperiksa' : ''}
                     </div>
@@ -4113,18 +4365,18 @@
                 </div>
 
                 <!-- Ruang terbuka agar model objek 3D di tengah layar terlihat jelas. GIF aktif tampil di area atas model. -->
-                <div class="flex-1 min-h-[210px] sm:min-h-[260px] pointer-events-none flex items-start justify-end sm:justify-end pt-2 sm:pt-3">
+                <div class="flex-1 min-h-[140px] sm:min-h-[260px] pointer-events-none flex items-start justify-end pt-2 sm:pt-3">
                     ${renderMission1ActiveGif(activeObj, activeObjIdx, alreadyDone)}
                 </div>
 
-                <div class="interactive-panel game-panel rounded-3xl p-4 sm:p-5 animate-pop">
-                    <div class="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
+                <div class="interactive-panel game-panel rounded-3xl p-3.5 sm:p-5 animate-pop">
+                    <div class="flex overflow-x-auto no-scrollbar sm:flex-wrap gap-1.5 sm:gap-2 mb-3 pb-0.5 sm:pb-0">
                         ${objs.map((o, idx) => {
                             const done = rt.classifiedIds.includes(o.id);
                             const active = o.id === activeObj.id;
                             return `
                             <button onclick="inspectMission1Object('${o.id}')"
-                                class="px-3 py-1.5 rounded-xl text-xs font-extrabold border-2 transition ${
+                                class="shrink-0 px-3 py-1.5 rounded-xl text-xs font-extrabold border-2 transition ${
                                     done ? 'bg-[#DFECE3] border-[#276749] text-[#276749]'
                                     : active ? 'bg-[#E6B84C] border-[#183629] text-[#183629]'
                                     : 'card-surface border-gray-300 text-gray-700'
@@ -4236,19 +4488,16 @@
             const basePath = `assets/misi2-soal-${questionNumber}`;
             return `
                 <div class="mx-auto w-full max-w-[260px]">
-                    <picture>
-                        <source srcset="${basePath}.gif" type="image/gif">
-                        <img
-                            src="${basePath}.jpg"
-                            alt="Placeholder GIF Misi 2 soal ${questionNumber}"
-                            class="w-full h-auto rounded-2xl border-2 border-[#689F77]/60 bg-[#DCEEF8] object-cover"
-                            style="aspect-ratio: 200 / 105;"
-                            onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
-                        >
-                    </picture>
+                    <img
+                        src="${basePath}.jpeg"
+                        alt="Ilustrasi Misi 2 soal ${questionNumber}"
+                        class="w-full h-auto rounded-2xl border-2 border-[#689F77]/60 bg-[#DCEEF8] object-cover"
+                        style="aspect-ratio: 200 / 105;"
+                        onerror="if(!this.dataset.f1){this.dataset.f1=1;this.src='${basePath}.jpg';}else if(!this.dataset.f2){this.dataset.f2=1;this.src='${basePath}.gif';}else{this.style.display='none';this.nextElementSibling.classList.remove('hidden');}"
+                    >
                     <div class="hidden rounded-2xl border-2 border-dashed border-[#6BAED6] bg-[#EAF6FD] text-[#183629] p-3 text-center font-extrabold text-xs sm:text-sm">
-                        Placeholder GIF Misi 2 Soal ${questionNumber}<br>
-                        Simpan file: ${basePath}.gif atau ${basePath}.jpg
+                        Gambar Misi 2 Soal ${questionNumber} belum ditemukan<br>
+                        Simpan file: ${basePath}.jpeg, .jpg, atau .gif
                     </div>
                 </div>`;
         }
@@ -4296,22 +4545,26 @@
         }
 
         function renderMission5GifPlaceholder(stageNumber) {
+            // Peta khusus untuk tahap yang punya gambar JPEG
+            const jpegMap = {
+                1: 'assets/monyet_dikebun (1).jpeg',
+                2: 'assets/monyet_pinggir_jalan_desa (1).jpeg'
+            };
+            const jpegPath = jpegMap[stageNumber] || null;
             const basePath = `assets/misi5-soal-${stageNumber}`;
+            const primarySrc = jpegPath || `${basePath}.gif`;
             return `
                 <div class="mission-art w-full max-w-[300px] mx-auto">
-                    <picture>
-                        <source srcset="${basePath}.gif" type="image/gif">
-                        <img
-                            src="${basePath}.jpg"
-                            alt="Placeholder GIF Misi 5 tahap ${stageNumber}"
-                            class="w-full h-auto rounded-2xl border-2 border-[#689F77]/60 bg-[#DCEEF8] object-cover"
-                            style="aspect-ratio: 320 / 145;"
-                            onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
-                        >
-                    </picture>
+                    <img
+                        src="${primarySrc}"
+                        alt="Ilustrasi Misi 5 tahap ${stageNumber}"
+                        class="w-full h-auto rounded-2xl border-2 border-[#689F77]/60 bg-[#DCEEF8] object-cover"
+                        style="aspect-ratio: 320 / 145;"
+                        onerror="if(!this.dataset.f1){this.dataset.f1=1;this.src='${basePath}.jpg';}else if(!this.dataset.f2){this.dataset.f2=1;this.src='${basePath}.gif';}else{this.style.display='none';this.nextElementSibling.classList.remove('hidden');}"
+                    >
                     <div class="hidden rounded-2xl border-2 border-dashed border-[#6BAED6] bg-[#EAF6FD] text-[#183629] p-3 text-center font-extrabold text-xs sm:text-sm">
-                        Placeholder GIF Misi 5 Tahap ${stageNumber}<br>
-                        Simpan file: ${basePath}.gif atau ${basePath}.jpg
+                        Gambar tidak ditemukan<br>
+                        Simpan file: ${primarySrc}
                     </div>
                 </div>`;
         }
@@ -4747,7 +5000,7 @@
          */
         function renderAchievementsScreen() {
             const allFiveDone = state.completedMissions.length === 5;
-            const playerLabel = state.playerName.trim() || 'Penjaga Hutan Cilik';
+            const playerLabel = state.playerName.trim() || 'Kelompok Penjaga Hutan';
 
             return `
             <section class="flex-1 p-4 sm:p-6 max-w-4xl mx-auto w-full interactive-panel animate-pop">
@@ -4810,7 +5063,7 @@
         }
 
         function renderReportScreen() {
-            const playerLabel = state.playerName.trim() || 'Penjaga Hutan Cilik';
+            const playerLabel = state.playerName.trim() || 'Kelompok Penjaga Hutan';
             const preDone = state.preTest.completed;
             const postDone = state.postTest.completed;
             const preScore = preDone ? state.preTest.score : 0;
@@ -4833,7 +5086,11 @@
                                 LAPORAN HASIL BELAJAR
                             </span>
                             <h2 class="text-2xl sm:text-3xl font-bold text-[#183629] mt-1">${escapeHtml(playerLabel)}</h2>
-                            <p class="text-xs sm:text-sm font-bold text-[#183629]/75">${escapeHtml(state.playerGroup)} • Karakter ${CHARACTER_PROFILES[state.characterId].name}</p>
+                            <p class="text-xs sm:text-sm font-bold text-[#183629]/75">${escapeHtml(state.playerGroup)} • ${(CHARACTER_PROFILES[state.characterId] || CHARACTER_PROFILES.air).name}</p>
+                            ${(() => {
+                                const members = (state.teamMembers || []).slice(0, state.memberCount || 4).map(m => m.trim()).filter(Boolean);
+                                return members.length ? `<p class="text-xs font-bold text-[#276749] mt-1">Anggota: ${members.map(m => escapeHtml(m)).join(', ')}</p>` : '';
+                            })()}
                         </div>
                         <button onclick="navigateTo('explore')" class="btn-3d btn-cream px-4 py-2 rounded-2xl text-sm font-extrabold">
                             ← Hutan 3D
@@ -4895,7 +5152,12 @@
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        ${!postDone && state.completedMissions.length === 5 ? `
+                        ${postDone ? `
+                            <button onclick="navigateTo('certificate')" class="btn-3d btn-yellow py-3.5 rounded-2xl font-extrabold text-sm sm:text-base flex items-center justify-center gap-1.5">
+                                ${IconSVG.crown("w-5 h-5")}
+                                <span>Lihat Sertifikat Lucu!</span>
+                            </button>
+                        ` : !postDone && state.completedMissions.length === 5 ? `
                             <button onclick="navigateTo('posttest')" class="btn-3d btn-yellow py-3.5 rounded-2xl font-extrabold text-sm sm:text-base">
                                 Kerjakan Kuis Akhir →
                             </button>
@@ -4908,16 +5170,123 @@
                             Kembali ke Hutan 3D
                         </button>
                         <button onclick="resetFullSession()" class="btn-3d btn-cream py-3.5 rounded-2xl font-extrabold text-sm sm:text-base">
-                            Siswa Baru / Ulangi
+                            Kelompok Baru / Ulangi
                         </button>
                     </div>
                 </div>
             </section>`;
         }
 
+        function renderCertificateScreen() {
+            const playerLabel = state.playerName.trim() || 'Kelompok Penjaga Hutan';
+            const team = CHARACTER_PROFILES[state.characterId] || CHARACTER_PROFILES.air;
+            const members = (state.teamMembers || []).slice(0, state.memberCount || 4).map(m => m.trim()).filter(Boolean);
+            const postScore = state.postTest.completed ? state.postTest.score : 0;
+            const isAir = team.id === 'air';
+            const finalDuration = state.gameDurationMs !== null ? state.gameDurationMs : (state.gameStartTime ? Date.now() - state.gameStartTime : null);
+
+            return `
+            <section class="flex-1 p-2 sm:p-4 max-w-3xl mx-auto w-full interactive-panel animate-pop flex flex-col justify-center">
+                <div id="certificate-card" class="relative bg-[#FCF9F2] border-[5px] border-[#276749] rounded-[1.5rem] p-3 sm:p-5 shadow-2xl overflow-hidden text-center">
+                    <!-- Bingkai Dekoratif Dalam -->
+                    <div class="border-3 border-dashed ${isAir ? 'border-[#6BAED6]' : 'border-[#E6B84C]'} rounded-[1.1rem] p-3 sm:p-5 relative">
+                        <!-- Bintang Sudut -->
+                        <div class="flex justify-between items-center mb-1">
+                            <span>${IconSVG.star("w-6 h-6 sm:w-7 sm:h-7")}</span>
+                            <span class="inline-flex items-center gap-1.5 bg-[#E6B84C] text-[#183629] border-2 border-[#183629] px-3.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wider shadow-sm">
+                                ${IconSVG.crown("w-4 h-4")}
+                                Sertifikat Penghargaan
+                            </span>
+                            <span>${IconSVG.star("w-6 h-6 sm:w-7 sm:h-7")}</span>
+                        </div>
+
+                        <h2 class="text-xl sm:text-3xl font-bold text-[#183629] mt-1 leading-tight">
+                            PENJAGA HUTAN CILIK HEBAT!
+                        </h2>
+                        <p class="text-xs font-bold text-[#276749] mt-0.5">
+                            Diberikan dengan bangga kepada:
+                        </p>
+
+                        <!-- Nama Kelompok & Badge Tim -->
+                        <div class="mt-2.5 inline-flex flex-col sm:flex-row items-center gap-2.5 bg-[#F6F1E3] border-2 ${isAir ? 'border-[#2B6CB0]' : 'border-[#C05621]'} rounded-2xl px-4 py-2 shadow-sm">
+                            ${IconSVG.portrait(team.id, "w-11 h-11 sm:w-14 sm:h-14 shrink-0")}
+                            <div class="text-center sm:text-left">
+                                <div class="text-lg sm:text-2xl font-bold text-[#183629] leading-tight">${escapeHtml(playerLabel)}</div>
+                                <div class="text-xs font-extrabold ${isAir ? 'text-[#2B6CB0]' : 'text-[#C05621]'}">
+                                    ${team.name} • ${escapeHtml(state.playerGroup)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Daftar Anggota -->
+                        ${members.length ? `
+                            <div class="mt-2.5">
+                                <p class="text-[11px] font-extrabold uppercase tracking-wider text-[#183629]/75 mb-1">Anggota Pahlawan Hutan:</p>
+                                <div class="flex flex-wrap justify-center gap-1.5">
+                                    ${members.map((m, i) => `
+                                        <span class="bg-[#DFECE3] border-2 border-[#276749] text-[#183629] px-2.5 py-0.5 rounded-full text-xs font-extrabold flex items-center gap-1">
+                                            <span>⭐</span> ${escapeHtml(m)}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <!-- Ringkasan Prestasi -->
+                        <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2 max-w-xl mx-auto">
+                            <div class="bg-[#DFECE3] border-2 border-[#276749] rounded-xl p-2">
+                                <div class="text-base sm:text-xl font-bold text-[#183629]">${state.completedMissions.length}/5</div>
+                                <div class="text-[11px] font-extrabold text-[#276749]">Pos Misi</div>
+                            </div>
+                            <div class="bg-[#DCEEF8] border-2 border-[#2B6CB0] rounded-xl p-2">
+                                <div class="text-base sm:text-xl font-bold text-[#183629]">${postScore}</div>
+                                <div class="text-[11px] font-extrabold text-[#1D4E89]">Skor Akhir</div>
+                            </div>
+                            <div class="bg-[#F5E8D6] border-2 border-[#C06C2B] rounded-xl p-2">
+                                <div class="text-base sm:text-xl font-bold text-[#183629]">${state.score}</div>
+                                <div class="text-[11px] font-extrabold text-[#8C4312]">Poin Hutan</div>
+                            </div>
+                            <div class="bg-[#FDF3D8] border-2 border-[#E6B84C] rounded-xl p-2">
+                                <div class="text-base sm:text-xl font-bold text-[#183629]">${formatDuration(finalDuration)}</div>
+                                <div class="text-[11px] font-extrabold text-[#8C4312]">⏱ Waktu Selesai</div>
+                            </div>
+                        </div>
+
+                        <!-- Maskot Pendukung Lucu -->
+                        <div class="mt-3 pt-2.5 border-t-2 border-dashed border-[#689F77]/50 flex items-center justify-center gap-3">
+                            ${IconSVG.portrait('pak_joko', "w-9 h-9 sm:w-11 sm:h-11")}
+                            <div class="text-center">
+                                <p class="text-xs font-extrabold text-[#183629]">Sahabat Hutan Dusun Cuntel</p>
+                                <p class="text-[11px] font-bold text-[#276749]">"Terima kasih sudah menjaga hutan & satwa!"</p>
+                            </div>
+                            ${IconSVG.portrait('owl', "w-9 h-9 sm:w-11 sm:h-11")}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tombol Aksi Sertifikat -->
+                <div class="print-hidden mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <button onclick="window.print()" class="btn-3d btn-yellow py-2.5 rounded-xl font-extrabold text-sm">
+                        🖨️ Cetak / Simpan PDF
+                    </button>
+                    <button onclick="navigateTo('report')" class="btn-3d btn-blue py-2.5 rounded-xl font-extrabold text-sm">
+                        ← Kembali ke Laporan
+                    </button>
+                    <button onclick="resetFullSession()" class="btn-3d btn-green py-2.5 rounded-xl font-extrabold text-sm">
+                        Kelompok Baru →
+                    </button>
+                </div>
+            </section>`;
+        }
+
         function resetFullSession() {
             AudioEngine.click();
+            resetGameTimer();
             state.playerName = '';
+            state.memberCount = 0;
+            state.teamMembers = ['', '', '', '', '', ''];
+            state.characterId = 'air';
+            ForestWorld3D.buildPlayerCharacter('air');
             state.currentSessionId = 'session-' + Date.now();
             state.tutorialStep = 0;
             state.storyStep = 0;
@@ -4988,7 +5357,7 @@
                             <span class="bg-[#2B6CB0] text-[#FCF9F2] text-xs font-extrabold px-3.5 py-1 rounded-full">
                                 DASBOR PENDIDIK • SD DUSUN CUNTEL
                             </span>
-                            <h2 class="text-2xl sm:text-3xl font-bold text-[#183629] mt-1">Rekap Hasil Belajar Siswa</h2>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-[#183629] mt-1">Rekap Hasil Belajar Kelompok</h2>
                         </div>
                         <div class="flex flex-wrap gap-2">
                             <button onclick="exportParticipantsCSV()" class="btn-3d btn-green px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-extrabold">
@@ -5008,7 +5377,7 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                         <div class="card-surface border-2 border-[#689F77] rounded-2xl p-3.5 text-center">
-                            <span class="text-xs font-extrabold text-[#183629]/75">Jumlah Siswa</span>
+                            <span class="text-xs font-extrabold text-[#183629]/75">Jumlah Kelompok</span>
                             <div class="text-2xl sm:text-3xl font-bold text-[#183629] mt-1">${list.length}</div>
                         </div>
                         <div class="bg-[#DCEEF8] border-2 border-[#2B6CB0] rounded-2xl p-3.5 text-center">
@@ -5029,7 +5398,7 @@
                         <table class="w-full text-left border-collapse text-xs sm:text-sm">
                             <thead>
                                 <tr class="bg-[#276749] text-[#FCF9F2]">
-                                    <th class="p-3 font-extrabold">Kode Siswa</th>
+                                    <th class="p-3 font-extrabold">Nama Kelompok</th>
                                     <th class="p-3 font-extrabold">Kelas</th>
                                     <th class="p-3 font-extrabold">Kuis Awal</th>
                                     <th class="p-3 font-extrabold">Kuis Akhir</th>
@@ -5042,7 +5411,7 @@
                                 ${list.length === 0 ? `
                                     <tr>
                                         <td colspan="7" class="p-6 text-center font-bold text-[#183629]/75">
-                                            Belum ada data siswa tersimpan di perangkat ini.
+                                            Belum ada data kelompok tersimpan di perangkat ini.
                                         </td>
                                     </tr>
                                 ` : list.map(p => {
@@ -5096,7 +5465,7 @@
 
         function exportParticipantsCSV() {
             AudioEngine.click();
-            const headers = ["Kode_Siswa", "Kelas", "Karakter", "Skor_Kuis_Awal", "Skor_Kuis_Akhir", "Selisih", "Pos_Selesai", "Poin_Game", "Waktu"];
+            const headers = ["Nama_Kelompok", "Kelas", "Karakter", "Skor_Kuis_Awal", "Skor_Kuis_Akhir", "Selisih", "Pos_Selesai", "Poin_Game", "Waktu"];
             const rows = state.participants.map(p => {
                 const diff = (p.preScore !== null && p.postScore !== null) ? (p.postScore - p.preScore) : "";
                 return [
